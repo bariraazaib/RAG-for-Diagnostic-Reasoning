@@ -10,27 +10,24 @@ import requests
 import zipfile
 import io
 
-# Your hardcoded API key
-GEMINI_API_KEY = "AIzaSyAHVnZccxmLFRDHGaOkZLBhRDw7kbcjFsM"
-
+# Hardcoded API Key
+GEMINI_API_KEY = "AIzaSyACHZJKkkdtloa7_c6wMdminm5-3iCsRY0"
 class DataExtractor:
     def __init__(self):
         self.zip_path = "./data.zip"
         self.extracted_path = "./data_extracted"
-        self.github_url = "https://github.com/Mustehsan-Nisar-Rao/RAG/raw/main/mimic-iv-ext-direct-1.0.zip"
+        self.github_url = "https://github.com/barirazaib/RAG/raw/main/mimic-iv-ext-direct-1.0.zip"
         
     def download_from_github(self):
         """Download ZIP file from GitHub"""
         try:
             st.info("📥 Downloading data from GitHub...")
             
-            # Use raw GitHub URL
             response = requests.get(self.github_url, stream=True)
             
             if response.status_code == 200:
                 total_size = int(response.headers.get('content-length', 0))
                 
-                # Create progress bar
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
@@ -59,27 +56,22 @@ class DataExtractor:
         
     def extract_data(self):
         """Extract data from ZIP file"""
-        # First, download the file if it doesn't exist
         if not os.path.exists(self.zip_path):
             if not self.download_from_github():
                 return False
             
         try:
-            # Create extraction directory
             os.makedirs(self.extracted_path, exist_ok=True)
             
-            # Extract ZIP file
             st.info("📦 Extracting ZIP file...")
             
             with zipfile.ZipFile(self.zip_path, 'r') as zip_ref:
-                # Get file list and set up progress
                 file_list = zip_ref.namelist()
                 total_files = len(file_list)
                 
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
-                # Extract all files
                 for i, file in enumerate(file_list):
                     zip_ref.extract(file, self.extracted_path)
                     progress = int(100 * (i + 1) / total_files)
@@ -99,7 +91,6 @@ class DataExtractor:
 class SimpleDataProcessor:
     def __init__(self, base_path: str):
         self.base_path = base_path
-        # Try different possible paths after extraction
         self.possible_kg_paths = [
             os.path.join(base_path, "mimic-iv-ext-direct-1.0", "mimic-iv-ext-direct-1.0.0", "diagnostic_kg", "Diagnosis_flowchart"),
             os.path.join(base_path, "mimic-iv-ext-direct-1.0", "diagnostic_kg", "Diagnosis_flowchart"),
@@ -118,7 +109,6 @@ class SimpleDataProcessor:
         self.kg_path = self._find_valid_path(self.possible_kg_paths)
         self.cases_path = self._find_valid_path(self.possible_case_paths)
         
-        # Log found paths
         if self.kg_path:
             st.info(f"📁 Knowledge graph path: {self.kg_path}")
         if self.cases_path:
@@ -166,7 +156,6 @@ class SimpleDataProcessor:
             st.info(f"💡 Checked paths: {self.possible_kg_paths}")
             return chunks
 
-        # Set up progress
         files = [f for f in os.listdir(self.kg_path) if f.endswith('.json')]
         total_files = len(files)
         
@@ -188,21 +177,18 @@ class SimpleDataProcessor:
 
                 for stage_name, stage_data in knowledge.items():
                     if isinstance(stage_data, dict):
-                        # Extract risk factors
                         if stage_data.get('Risk Factors'):
                             chunks.append({
                                 'text': f"{condition} - Risk Factors: {stage_data['Risk Factors']}",
                                 'metadata': {'type': 'knowledge', 'category': 'risk_factors', 'condition': condition}
                             })
 
-                        # Extract symptoms
                         if stage_data.get('Symptoms'):
                             chunks.append({
                                 'text': f"{condition} - Symptoms: {stage_data['Symptoms']}",
                                 'metadata': {'type': 'knowledge', 'category': 'symptoms', 'condition': condition}
                             })
                 
-                # Update progress
                 progress = int(100 * (i + 1) / total_files)
                 progress_bar.progress(progress)
                 status_text.text(f"Processing knowledge files... {i+1}/{total_files}")
@@ -225,7 +211,6 @@ class SimpleDataProcessor:
             st.info(f"💡 Checked paths: {self.possible_case_paths}")
             return chunks
 
-        # Count total files for progress
         total_files = 0
         file_paths = []
         
@@ -245,7 +230,6 @@ class SimpleDataProcessor:
             st.warning("⚠️ No case files found")
             return chunks
 
-        # Set up progress
         progress_bar = st.progress(0)
         status_text = st.empty()
 
@@ -254,7 +238,6 @@ class SimpleDataProcessor:
             self._process_case_file(file_path, condition_folder, chunks)
             processed_files += 1
             
-            # Update progress
             progress = int(100 * processed_files / total_files)
             progress_bar.progress(progress)
             status_text.text(f"Processing case files... {processed_files}/{total_files}")
@@ -276,7 +259,6 @@ class SimpleDataProcessor:
             filename = os.path.basename(file_path)
             case_id = filename.replace('.json', '')
 
-            # Extract narrative (inputs)
             narrative_parts = []
             for i in range(1, 7):
                 key = f'input{i}'
@@ -289,7 +271,6 @@ class SimpleDataProcessor:
                     'metadata': {'type': 'narrative', 'case_id': case_id, 'condition': condition_folder}
                 })
 
-            # Extract reasoning
             for key in data:
                 if not key.startswith('input'):
                     reasoning = self._extract_reasoning(data[key])
@@ -329,21 +310,18 @@ class SimpleDataProcessor:
         """Run complete extraction"""
         st.info("🚀 Starting data extraction...")
 
-        # Check if data exists
         kg_exists, cases_exists = self.check_data_exists()
         if not kg_exists and not cases_exists:
             st.error("❌ No valid data found after extraction.")
             st.info("💡 Please check the ZIP file structure")
             return []
 
-        # Count files
         kg_count, case_count = self.count_files()
 
         if kg_count == 0 and case_count == 0:
             st.error("❌ No JSON files found in data directories.")
             return []
 
-        # Extract data
         knowledge_chunks = self.extract_knowledge()
         case_chunks = self.extract_patient_cases()
 
@@ -369,13 +347,11 @@ class SimpleRAGSystem:
     def create_collections(self):
         """Create separate collections for knowledge and cases"""
         try:
-            # Knowledge collection
             self.knowledge_collection = self.client.get_or_create_collection(
                 name="medical_knowledge",
                 embedding_function=self.embedding_function
             )
 
-            # Cases collection
             self.cases_collection = self.client.get_or_create_collection(
                 name="patient_cases",
                 embedding_function=self.embedding_function
@@ -405,7 +381,6 @@ class SimpleRAGSystem:
                     case_metas.append(chunk['metadata'])
                     case_ids.append(f"case_{i}")
 
-                # Update progress
                 progress = int(100 * (i + 1) / total_chunks)
                 progress_bar.progress(progress)
                 status_text.text(f"Indexing chunks... {i+1}/{total_chunks}")
@@ -413,7 +388,6 @@ class SimpleRAGSystem:
             progress_bar.empty()
             status_text.empty()
 
-            # Add to collections
             if knowledge_docs:
                 self.knowledge_collection.add(
                     documents=knowledge_docs,
@@ -435,19 +409,16 @@ class SimpleRAGSystem:
     def query(self, question, top_k=5):
         """Simple query across both collections"""
         try:
-            # Query knowledge
             knowledge_results = self.knowledge_collection.query(
                 query_texts=[question],
                 n_results=top_k
             )
 
-            # Query cases
             case_results = self.cases_collection.query(
                 query_texts=[question],
                 n_results=top_k
             )
 
-            # Combine results
             all_results = []
             if knowledge_results['documents']:
                 all_results.extend(knowledge_results['documents'][0])
@@ -464,18 +435,15 @@ class MedicalAI:
         self.rag = rag_system
         try:
             genai.configure(api_key=api_key)
-            # Use a more widely available model
             self.model = genai.GenerativeModel('gemini-2.5-flash')
         except Exception as e:
             st.error(f"Error initializing Gemini: {e}")
 
     def ask(self, question):
         try:
-            # Get relevant context from RAG
             context_chunks = self.rag.query(question, top_k=5)
             context = "\n---\n".join(context_chunks)
 
-            # Create prompt WITHOUT the "what's missing" section
             prompt = f"""You are a medical expert. Use the following medical context to answer the question accurately and comprehensively.
 
 MEDICAL CONTEXT:
@@ -492,15 +460,51 @@ Please provide a comprehensive medical answer based on the context. Focus on the
 
 def main():
     st.set_page_config(
-        page_title="Medical RAG System",
-        page_icon="🏥",
-        layout="wide"
+        page_title="MediAssist AI",
+        page_icon="🩺",
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
 
-    st.title("🏥 Medical Diagnosis Assistant")
-    st.markdown("Ask medical questions about symptoms, diagnoses, and patient cases")
+    st.markdown("""
+        <style>
+        .main {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .stButton>button {
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .header-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 0.5rem 0;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    # Initialize session state
+    st.markdown("""
+        <div class="header-container">
+            <h1 style="margin:0; font-size: 3rem;">🩺 MediAssist AI</h1>
+            <p style="margin:0; font-size: 1.2rem; opacity: 0.9;">Advanced Medical Diagnosis & Knowledge Assistant</p>
+        </div>
+    """, unsafe_allow_html=True)
+
     if 'initialized' not in st.session_state:
         st.session_state.initialized = False
     if 'medical_ai' not in st.session_state:
@@ -509,138 +513,272 @@ def main():
         st.session_state.data_extracted = False
     if 'rag_system' not in st.session_state:
         st.session_state.rag_system = None
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
 
-    # Sidebar for configuration
-    st.sidebar.header("Configuration")
-    
-    # Show API key status (hardcoded, no input needed)
-    st.sidebar.success("🔑 API key configured")
-    
-    # Data extraction section
-    st.sidebar.subheader("📁 Data Setup")
-    
-    if not st.session_state.data_extracted:
-        if st.sidebar.button("📥 Download & Extract Data", type="primary"):
-            with st.spinner("Downloading data from GitHub and extracting..."):
-                extractor = DataExtractor()
-                if extractor.extract_data():
-                    st.session_state.data_extracted = True
-                    st.session_state.extractor = extractor
-                    st.rerun()
+    with st.sidebar:
+        st.image("https://img.icons8.com/fluency/96/000000/stethoscope.png", width=80)
+        st.title("⚙️ Control Panel")
+        
+        st.success("✅ API Key Configured")
+        
+        st.divider()
+        
+        st.subheader("📦 Data Management")
+        
+        if not st.session_state.data_extracted:
+            if st.button("📥 Download Medical Data", type="primary", use_container_width=True):
+                with st.spinner("Downloading and extracting medical data..."):
+                    extractor = DataExtractor()
+                    if extractor.extract_data():
+                        st.session_state.data_extracted = True
+                        st.session_state.extractor = extractor
+                        st.rerun()
+        else:
+            st.success("✅ Data Ready")
 
-    # Initialize system
-    if st.session_state.data_extracted and not st.session_state.initialized:
-        if st.sidebar.button("🚀 Initialize System", type="primary"):
-            try:
-                with st.spinner("🚀 Processing medical data and setting up RAG system... This may take a few minutes."):
-                    # Initialize processor and extract data
-                    processor = SimpleDataProcessor(st.session_state.extractor.extracted_path)
-                    chunks = processor.run()
-
-                    if not chunks:
-                        st.error("❌ No data was extracted. Please check your data file structure.")
-                        return
-
-                    # Initialize RAG system
-                    rag_system = SimpleRAGSystem(chunks)
-                    rag_system.create_collections()
-                    rag_system.index_data()
-
-                    # Initialize Medical AI with hardcoded API key
-                    st.session_state.medical_ai = MedicalAI(rag_system, GEMINI_API_KEY)
-                    st.session_state.rag_system = rag_system
-                    st.session_state.initialized = True
-
-                st.success("✅ System initialized successfully!")
-                st.balloons()
-
-            except Exception as e:
-                st.error(f"❌ Error initializing system: {str(e)}")
-
-    # Main interface
-    if st.session_state.initialized and st.session_state.medical_ai:
-        st.header("💬 Medical Query Interface")
-
-        # Question input
-        question = st.text_area(
-            "Enter your medical question:",
-            placeholder="e.g., What are the symptoms of migraine? How is chest pain evaluated? What are risk factors for gastrointestinal bleeding?",
-            height=100
-        )
-
-        # Advanced options
-        with st.expander("Advanced Options"):
-            col1, col2 = st.columns(2)
-            with col1:
-                top_k = st.slider("Number of context chunks", min_value=1, max_value=10, value=5)
-            with col2:
-                show_context = st.checkbox("Show retrieved context", value=False)
-
-        if st.button("Get Medical Answer", type="primary", use_container_width=True) and question:
-            with st.spinner("🔍 Analyzing medical context and generating answer..."):
+        if st.session_state.data_extracted and not st.session_state.initialized:
+            st.divider()
+            if st.button("🚀 Initialize AI System", type="primary", use_container_width=True):
                 try:
-                    # Get answer
-                    answer = st.session_state.medical_ai.ask(question)
+                    with st.spinner("🔧 Building intelligent medical assistant..."):
+                        processor = SimpleDataProcessor(st.session_state.extractor.extracted_path)
+                        chunks = processor.run()
 
-                    # Display answer
-                    st.subheader("🤖 Medical Answer")
-                    st.markdown(f"**Question:** {question}")
-                    st.markdown("**Answer:**")
-                    st.write(answer)
+                        if not chunks:
+                            st.error("❌ No data extracted. Check file structure.")
+                            return
 
-                    # Show context if requested
-                    if show_context:
-                        st.subheader("📚 Retrieved Context")
-                        context_chunks = st.session_state.rag_system.query(question, top_k=top_k)
-                        
-                        for i, chunk in enumerate(context_chunks):
-                            with st.expander(f"Context Chunk {i+1}"):
-                                st.text(chunk[:500] + "..." if len(chunk) > 500 else chunk)
+                        rag_system = SimpleRAGSystem(chunks)
+                        rag_system.create_collections()
+                        rag_system.index_data()
+
+                        st.session_state.medical_ai = MedicalAI(rag_system, GEMINI_API_KEY)
+                        st.session_state.rag_system = rag_system
+                        st.session_state.initialized = True
+
+                    st.success("✅ System Ready!")
+                    st.balloons()
 
                 except Exception as e:
-                    st.error(f"❌ Error generating answer: {str(e)}")
+                    st.error(f"❌ Initialization error: {str(e)}")
 
-        # Example questions
-        st.subheader("💡 Example Questions")
-        examples = [
-            "What are the diagnostic criteria for migraine?",
-            "How is chest pain evaluated in emergency settings?",
-            "What are common risk factors for gastrointestinal bleeding?",
-            "Describe the symptoms and diagnosis process for pneumonia",
-            "What are the treatment options for asthma?",
-            "How to diagnose and manage diabetes?"
-        ]
+        if st.session_state.initialized and st.session_state.rag_system:
+            st.divider()
+            st.subheader("📊 System Statistics")
+            
+            knowledge_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'knowledge'])
+            narrative_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'narrative'])
+            reasoning_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'reasoning'])
+            
+            st.metric("Knowledge Base", f"{knowledge_count:,}")
+            st.metric("Case Studies", f"{narrative_count:,}")
+            st.metric("Reasoning Paths", f"{reasoning_count:,}")
+            st.metric("Total Documents", f"{len(st.session_state.rag_system.chunks):,}")
 
-        cols = st.columns(2)
-        for i, example in enumerate(examples):
-            with cols[i % 2]:
-                if st.button(example, use_container_width=True):
-                    st.session_state.last_question = example
+        st.divider()
+        st.caption("🔬 Powered by Gemini AI")
+        st.caption("📚 Data: github.com/barirazaib/RAG")
+
+    if st.session_state.initialized and st.session_state.medical_ai:
+        
+        tab1, tab2, tab3 = st.tabs(["💬 Ask Questions", "📚 Example Queries", "ℹ️ About"])
+        
+        with tab1:
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                st.subheader("🔍 Medical Query Interface")
+                
+                question = st.text_area(
+                    "Enter your medical question:",
+                    placeholder="Describe symptoms, ask about conditions, or request diagnostic information...",
+                    height=120,
+                    key="question_input"
+                )
+                
+                col_btn1, col_btn2 = st.columns([1, 3])
+                with col_btn1:
+                    submit = st.button("🔍 Analyze", type="primary", use_container_width=True)
+                with col_btn2:
+                    clear = st.button("🗑️ Clear History", use_container_width=True)
+                
+                if clear:
+                    st.session_state.chat_history = []
                     st.rerun()
 
-        # System info
-        with st.expander("📊 System Information"):
-            if st.session_state.rag_system:
-                knowledge_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'knowledge'])
-                narrative_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'narrative'])
-                reasoning_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'reasoning'])
-                
-                st.write(f"**Knowledge chunks:** {knowledge_count}")
-                st.write(f"**Case narratives:** {narrative_count}")
-                st.write(f"**Case reasoning:** {reasoning_count}")
-                st.write(f"**Total chunks:** {len(st.session_state.rag_system.chunks)}")
+            with col2:
+                with st.expander("⚙️ Advanced Settings", expanded=False):
+                    top_k = st.slider("Context Depth", 1, 10, 5)
+                    show_context = st.checkbox("Show Sources", value=False)
+
+            if submit and question:
+                with st.spinner("🧠 Analyzing medical data..."):
+                    try:
+                        answer = st.session_state.medical_ai.ask(question)
+                        
+                        st.session_state.chat_history.append({
+                            'question': question,
+                            'answer': answer
+                        })
+                        
+                        st.markdown("---")
+                        st.markdown("### 🤖 Medical Analysis")
+                        st.info(f"**Question:** {question}")
+                        st.success(f"**Answer:**\n\n{answer}")
+
+                        if show_context:
+                            with st.expander("📚 Retrieved Medical Context"):
+                                context_chunks = st.session_state.rag_system.query(question, top_k=top_k)
+                                
+                                for i, chunk in enumerate(context_chunks):
+                                    st.markdown(f"**Source {i+1}:**")
+                                    st.text(chunk[:400] + "..." if len(chunk) > 400 else chunk)
+                                    st.divider()
+
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
+            
+            if st.session_state.chat_history:
+                st.markdown("---")
+                st.subheader("📜 Consultation History")
+                for i, item in enumerate(reversed(st.session_state.chat_history[-5:])):
+                    with st.expander(f"Query {len(st.session_state.chat_history)-i}: {item['question'][:60]}..."):
+                        st.markdown(f"**Q:** {item['question']}")
+                        st.markdown(f"**A:** {item['answer']}")
+
+        with tab2:
+            st.subheader("💡 Example Medical Queries")
+            st.markdown("Click any question below to quickly explore the system's capabilities:")
+            
+            examples = {
+                "🫀 Cardiovascular": [
+                    "What are the warning signs and risk factors for acute myocardial infarction?",
+                    "Explain the differential diagnosis approach for chest pain in emergency settings"
+                ],
+                "🧠 Neurological": [
+                    "Describe the clinical presentation and diagnosis of ischemic stroke",
+                    "What are the key differences between migraine types and their treatment protocols?"
+                ],
+                "🫁 Respiratory": [
+                    "What are the diagnostic criteria and management steps for acute respiratory distress?",
+                    "How do you differentiate between bacterial and viral pneumonia clinically?"
+                ]
+            }
+            
+            for category, questions in examples.items():
+                st.markdown(f"### {category}")
+                for question in questions:
+                    if st.button(question, key=question, use_container_width=True):
+                        st.session_state.selected_question = question
+                        st.rerun()
+                st.markdown("")
+
+        with tab3:
+            st.subheader("ℹ️ About MediAssist AI")
+            
+            st.markdown("""
+            ### 🎯 What is MediAssist AI?
+            
+            MediAssist AI is an advanced medical knowledge assistant powered by RAG technology and Gemini AI.
+            
+            ### ⚠️ Important Disclaimer
+            
+            **This system is for educational and informational purposes only.**
+            
+            - Not a substitute for professional medical advice
+            - Always consult qualified healthcare providers
+            - For emergencies, contact emergency services immediately
+            """)
 
     else:
-        st.info("""
-        👋 **Welcome to the Medical RAG System!**
+        st.markdown("""
+            <div style='text-align: center; padding: 3rem;'>
+                <img src='https://img.icons8.com/fluency/200/000000/medical-doctor.png' width='150'>
+                <h2 style='color: #667eea; margin-top: 1rem;'>Welcome to MediAssist AI</h2>
+                <p style='font-size: 1.2rem; color: #666; max-width: 600px; margin: 1rem auto;'>
+                    Your intelligent companion for medical knowledge exploration
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        To get started:
-        1. 📥 Click 'Download & Extract Data' to get medical data from GitHub
-        2. 🚀 Click 'Initialize System' to build the RAG system
+        st.markdown("""
+            <div style='background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>
+                <h2 style='color: #667eea; text-align: center;'>🚀 Get Started in 2 Simple Steps</h2>
+                <br>
+                <div style='display: flex; justify-content: space-around; flex-wrap: wrap;'>
+                    <div style='flex: 1; min-width: 250px; margin: 1rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; border-left: 5px solid #667eea;'>
+                        <h3>Step 1: Download Data 📥</h3>
+                        <p>Click <b>"Download Medical Data"</b> in the sidebar to fetch the medical knowledge base from GitHub</p>
+                    </div>
+                    <div style='flex: 1; min-width: 250px; margin: 1rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px; border-left: 5px solid #764ba2;'>
+                        <h3>Step 2: Initialize System 🚀</h3>
+                        <p>Click <b>"Initialize AI System"</b> to build your intelligent medical assistant</p>
+                    </div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
         
-        *API key is pre-configured*
-        *Data source: https://github.com/Mustehsan-Nisar-Rao/RAG/raw/main/mimic-iv-ext-direct-1.0.zip*
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # Features grid
+        st.markdown("### ✨ What Makes MediAssist AI Special?")
+        
+        feature_col1, feature_col2 = st.columns(2)
+        
+        with feature_col1:
+            st.markdown("""
+            - 🎯 **Context-Aware Responses**: Understands complex medical terminology
+            - 📊 **Evidence-Based**: Answers backed by medical literature
+            - 🔄 **Multi-Specialty**: Covers all major medical specialties
+            - ⚡ **Fast Retrieval**: Instant access to relevant information
+            """)
+        
+        with feature_col2:
+            st.markdown("""
+            - 🧠 **Intelligent Analysis**: Powered by Google's Gemini AI
+            - 📚 **Comprehensive Database**: Thousands of medical documents
+            - 🔍 **Semantic Search**: Finds contextually relevant information
+            - 💡 **Educational Focus**: Learn diagnostic reasoning patterns
+            """)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Disclaimer box
+        st.warning("""
+            ⚠️ **Medical Disclaimer**: This system is designed for educational and informational purposes only. 
+            It is NOT a substitute for professional medical advice, diagnosis, or treatment. 
+            Always seek the advice of qualified healthcare providers with questions regarding medical conditions.
         """)
+        
+        st.info("""
+            💡 **Tip**: Once initialized, you can ask questions about symptoms, diagnoses, treatment protocols, 
+            and explore real patient case studies to enhance your medical knowledge.
+        """)
+
+    # Handle selected question from examples
+    if hasattr(st.session_state, 'selected_question') and st.session_state.selected_question:
+        if st.session_state.initialized and st.session_state.medical_ai:
+            with st.spinner("🧠 Analyzing medical data..."):
+                try:
+                    answer = st.session_state.medical_ai.ask(st.session_state.selected_question)
+                    
+                    st.session_state.chat_history.append({
+                        'question': st.session_state.selected_question,
+                        'answer': answer
+                    })
+                    
+                    st.markdown("---")
+                    st.markdown("### 🤖 Medical Analysis")
+                    st.info(f"**Question:** {st.session_state.selected_question}")
+                    st.success(f"**Answer:**\n\n{answer}")
+                    
+                    # Clear the selected question
+                    st.session_state.selected_question = None
+                    
+                except Exception as e:
+                    st.error(f"❌ Error: {str(e)}")
+                    st.session_state.selected_question = None
 
 if __name__ == "__main__":
     main()
