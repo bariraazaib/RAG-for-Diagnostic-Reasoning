@@ -11,7 +11,7 @@ import zipfile
 import io
 
 # Your hardcoded API key
-GEMINI_API_KEY = "AIzaSyCkwbqccRPTUd3zLqJ3A6WagcdDRsMJQCY"
+GEMINI_API_KEY = "AIzaSyCUOQsqEUh9SYZ4MmfxjGTSgVywHfnqNls"
 
 # ==================== CUSTOM CSS ====================
 def load_css():
@@ -907,12 +907,8 @@ def main():
         # Example Questions
         st.markdown("### 💡 Example Questions")
         examples = [
-            "What are the diagnostic criteria for migraine?",
-            "How is chest pain evaluated in emergency settings?",
-            "What are common risk factors for gastrointestinal bleeding?",
             "Describe the symptoms and diagnosis process for pneumonia",
             "What are the treatment options for asthma?",
-            "How to diagnose and manage diabetes?"
         ]
         
         cols = st.columns(2)
