@@ -17,7 +17,7 @@ class DataExtractor:
     def __init__(self):
         self.zip_path = "./data.zip"
         self.extracted_path = "./data_extracted"
-        self.github_url = "https://github.com/bariraazaib/RAG-for-Diagnostic-Reasoning/blob/main/mimic-iv-ext-direct-1.0.zip"
+        self.github_url = "https://github.com/Mustehsan-Nisar-Rao/RAG/raw/main/mimic-iv-ext-direct-1.0.zip"
         
     def download_from_github(self):
         """Download ZIP file from GitHub"""
@@ -492,77 +492,13 @@ Please provide a comprehensive medical answer based on the context. Focus on the
 
 def main():
     st.set_page_config(
-        page_title="Medical AI Assistant",
+        page_title="Medical RAG System",
         page_icon="🏥",
         layout="wide"
     )
 
-    # Simple and clean CSS
-    st.markdown("""
-        <style>
-        /* Import Google Font */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-        
-        /* Main styling */
-        .stApp {
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        /* Header */
-        .main-header {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 2rem;
-            color: white;
-        }
-        
-        .main-header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-        }
-        
-        .main-header p {
-            margin: 0.5rem 0 0 0;
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        /* Cards */
-        .info-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin: 1rem 0;
-        }
-        
-        /* Buttons enhancement */
-        .stButton>button {
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .stButton>button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        /* Question area */
-        .stTextArea textarea {
-            border-radius: 10px;
-            border: 2px solid #e0e0e0;
-            font-size: 1rem;
-        }
-        
-        .stTextArea textarea:focus {
-            border-color: #667eea;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    st.title("🏥 Medical Diagnosis Assistant")
+    st.markdown("Ask medical questions about symptoms, diagnoses, and patient cases")
 
     # Initialize session state
     if 'initialized' not in st.session_state:
@@ -574,18 +510,10 @@ def main():
     if 'rag_system' not in st.session_state:
         st.session_state.rag_system = None
 
-    # Header
-    st.markdown("""
-        <div class="main-header">
-            <h1>🏥 Medical AI Assistant</h1>
-            <p>AI-Powered Medical Diagnosis & Knowledge System</p>
-        </div>
-    """, unsafe_allow_html=True)
-
     # Sidebar for configuration
-    st.sidebar.header("⚙️ System Configuration")
+    st.sidebar.header("Configuration")
     
-    # Show API key status
+    # Show API key status (hardcoded, no input needed)
     st.sidebar.success("🔑 API key configured")
     
     # Data extraction section
@@ -593,7 +521,7 @@ def main():
     
     if not st.session_state.data_extracted:
         if st.sidebar.button("📥 Download & Extract Data", type="primary"):
-            with st.spinner("Downloading and extracting data..."):
+            with st.spinner("Downloading data from GitHub and extracting..."):
                 extractor = DataExtractor()
                 if extractor.extract_data():
                     st.session_state.data_extracted = True
@@ -604,7 +532,7 @@ def main():
     if st.session_state.data_extracted and not st.session_state.initialized:
         if st.sidebar.button("🚀 Initialize System", type="primary"):
             try:
-                with st.spinner("🚀 Processing medical data and setting up RAG system..."):
+                with st.spinner("🚀 Processing medical data and setting up RAG system... This may take a few minutes."):
                     # Initialize processor and extract data
                     processor = SimpleDataProcessor(st.session_state.extractor.extracted_path)
                     chunks = processor.run()
@@ -618,7 +546,7 @@ def main():
                     rag_system.create_collections()
                     rag_system.index_data()
 
-                    # Initialize Medical AI
+                    # Initialize Medical AI with hardcoded API key
                     st.session_state.medical_ai = MedicalAI(rag_system, GEMINI_API_KEY)
                     st.session_state.rag_system = rag_system
                     st.session_state.initialized = True
@@ -631,51 +559,49 @@ def main():
 
     # Main interface
     if st.session_state.initialized and st.session_state.medical_ai:
-        st.header("💬 Ask Your Medical Question")
+        st.header("💬 Medical Query Interface")
 
         # Question input
         question = st.text_area(
             "Enter your medical question:",
-            placeholder="e.g., What are the symptoms of migraine? How is chest pain evaluated?",
-            height=120
+            placeholder="e.g., What are the symptoms of migraine? How is chest pain evaluated? What are risk factors for gastrointestinal bleeding?",
+            height=100
         )
 
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            ask_button = st.button("🔍 Get Medical Answer", type="primary", use_container_width=True)
-        
-        with col2:
-            show_context = st.checkbox("📚 Show context")
+        # Advanced options
+        with st.expander("Advanced Options"):
+            col1, col2 = st.columns(2)
+            with col1:
+                top_k = st.slider("Number of context chunks", min_value=1, max_value=10, value=5)
+            with col2:
+                show_context = st.checkbox("Show retrieved context", value=False)
 
-        if ask_button and question:
-            with st.spinner("🔍 Analyzing medical context..."):
+        if st.button("Get Medical Answer", type="primary", use_container_width=True) and question:
+            with st.spinner("🔍 Analyzing medical context and generating answer..."):
                 try:
                     # Get answer
                     answer = st.session_state.medical_ai.ask(question)
 
                     # Display answer
-                    st.markdown("---")
                     st.subheader("🤖 Medical Answer")
-                    st.info(f"**Question:** {question}")
-                    st.success(answer)
+                    st.markdown(f"**Question:** {question}")
+                    st.markdown("**Answer:**")
+                    st.write(answer)
 
                     # Show context if requested
                     if show_context:
                         st.subheader("📚 Retrieved Context")
-                        context_chunks = st.session_state.rag_system.query(question, top_k=5)
+                        context_chunks = st.session_state.rag_system.query(question, top_k=top_k)
                         
                         for i, chunk in enumerate(context_chunks):
-                            with st.expander(f"Context Source {i+1}"):
-                                st.text(chunk)
+                            with st.expander(f"Context Chunk {i+1}"):
+                                st.text(chunk[:500] + "..." if len(chunk) > 500 else chunk)
 
                 except Exception as e:
-                    st.error(f"❌ Error: {str(e)}")
+                    st.error(f"❌ Error generating answer: {str(e)}")
 
         # Example questions
-        st.markdown("---")
         st.subheader("💡 Example Questions")
-        
         examples = [
             "What are the diagnostic criteria for migraine?",
             "How is chest pain evaluated in emergency settings?",
@@ -688,61 +614,32 @@ def main():
         cols = st.columns(2)
         for i, example in enumerate(examples):
             with cols[i % 2]:
-                if st.button(example, key=f"ex_{i}", use_container_width=True):
-                    st.session_state.example_question = example
+                if st.button(example, use_container_width=True):
+                    st.session_state.last_question = example
                     st.rerun()
 
-        # System info in sidebar
-        if st.session_state.rag_system:
-            st.sidebar.markdown("---")
-            st.sidebar.subheader("📊 System Stats")
-            
-            knowledge_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'knowledge'])
-            narrative_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'narrative'])
-            reasoning_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'reasoning'])
-            
-            st.sidebar.metric("Knowledge", knowledge_count)
-            st.sidebar.metric("Narratives", narrative_count)
-            st.sidebar.metric("Reasoning", reasoning_count)
-            st.sidebar.metric("Total", len(st.session_state.rag_system.chunks))
+        # System info
+        with st.expander("📊 System Information"):
+            if st.session_state.rag_system:
+                knowledge_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'knowledge'])
+                narrative_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'narrative'])
+                reasoning_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'reasoning'])
+                
+                st.write(f"**Knowledge chunks:** {knowledge_count}")
+                st.write(f"**Case narratives:** {narrative_count}")
+                st.write(f"**Case reasoning:** {reasoning_count}")
+                st.write(f"**Total chunks:** {len(st.session_state.rag_system.chunks)}")
 
     else:
-        # Welcome screen
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("""
-                <div class="info-card">
-                    <h3 style="text-align: center;">🧠 AI-Powered</h3>
-                    <p style="text-align: center;">Advanced RAG system with Gemini AI</p>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-                <div class="info-card">
-                    <h3 style="text-align: center;">📚 Rich Database</h3>
-                    <p style="text-align: center;">Thousands of medical cases</p>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown("""
-                <div class="info-card">
-                    <h3 style="text-align: center;">⚡ Fast & Accurate</h3>
-                    <p style="text-align: center;">Quick medical insights</p>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("---")
         st.info("""
-        👋 **Welcome! Get Started:**
+        👋 **Welcome to the Medical RAG System!**
         
-        1. 📥 Click **'Download & Extract Data'** in sidebar
-        2. 🚀 Click **'Initialize System'** to build RAG
-        3. 💬 Start asking medical questions!
+        To get started:
+        1. 📥 Click 'Download & Extract Data' to get medical data from GitHub
+        2. 🚀 Click 'Initialize System' to build the RAG system
         
-        *Data source: MIMIC-IV Clinical Database*
+        *API key is pre-configured*
+        *Data source: https://github.com/Mustehsan-Nisar-Rao/RAG/raw/main/mimic-iv-ext-direct-1.0.zip*
         """)
 
 if __name__ == "__main__":
