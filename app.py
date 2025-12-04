@@ -494,188 +494,72 @@ def main():
     st.set_page_config(
         page_title="Medical AI Assistant",
         page_icon="🏥",
-        layout="wide",
-        initial_sidebar_state="expanded"
+        layout="wide"
     )
 
-    # Custom CSS for modern styling
+    # Simple and clean CSS
     st.markdown("""
         <style>
-        /* Main theme colors */
-        :root {
-            --primary-color: #2E86AB;
-            --secondary-color: #A23B72;
-            --success-color: #06D6A0;
-            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Import Google Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        /* Main styling */
+        .stApp {
+            font-family: 'Poppins', sans-serif;
         }
         
-        /* Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2.5rem 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        /* Header */
+        .main-header {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 10px;
             text-align: center;
-        }
-        
-        .hero-title {
+            margin-bottom: 2rem;
             color: white;
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         
-        .hero-subtitle {
-            color: rgba(255,255,255,0.95);
-            font-size: 1.3rem;
-            font-weight: 400;
-            margin-top: 0;
-        }
-        
-        /* Stats Cards */
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 4px solid #667eea;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-        }
-        
-        .stat-number {
+        .main-header h1 {
+            margin: 0;
             font-size: 2.5rem;
             font-weight: 700;
-            color: #667eea;
-            margin: 0;
         }
         
-        .stat-label {
-            font-size: 1rem;
-            color: #666;
-            margin-top: 0.5rem;
+        .main-header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
         
-        /* Question Box */
-        .question-box {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 2rem;
-            border-radius: 15px;
-            margin: 1.5rem 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        /* Answer Box */
-        .answer-box {
+        /* Cards */
+        .info-card {
             background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid #06D6A0;
-            margin: 1.5rem 0;
-        }
-        
-        .answer-label {
-            color: #06D6A0;
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        /* Example Questions */
-        .example-card {
-            background: white;
-            padding: 1.2rem;
+            padding: 1.5rem;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-left: 3px solid #764ba2;
-            margin: 0.8rem 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .example-card:hover {
-            transform: translateX(10px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-left-width: 5px;
-        }
-        
-        /* Setup Cards */
-        .setup-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
-            border-radius: 15px;
-            color: white;
             margin: 1rem 0;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         
-        .setup-step {
-            display: flex;
-            align-items: center;
-            margin: 1rem 0;
-            font-size: 1.1rem;
-        }
-        
-        .step-number {
-            background: rgba(255,255,255,0.3);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            margin-right: 1rem;
-        }
-        
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
+        /* Buttons enhancement */
+        .stButton>button {
+            border-radius: 8px;
             font-weight: 600;
-            font-size: 0.9rem;
+            transition: all 0.3s;
         }
         
-        .status-ready {
-            background: #06D6A0;
-            color: white;
+        .stButton>button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
-        .status-pending {
-            background: #F77F00;
-            color: white;
+        /* Question area */
+        .stTextArea textarea {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            font-size: 1rem;
         }
         
-        /* Hide Streamlit branding */
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #667eea;
-            border-radius: 5px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #764ba2;
+        .stTextArea textarea:focus {
+            border-color: #667eea;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -689,258 +573,176 @@ def main():
         st.session_state.data_extracted = False
     if 'rag_system' not in st.session_state:
         st.session_state.rag_system = None
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
 
-    # Hero Section
+    # Header
     st.markdown("""
-        <div class="hero-section">
-            <h1 class="hero-title">🏥 Medical AI Assistant</h1>
-            <p class="hero-subtitle">AI-Powered Medical Diagnosis & Knowledge System</p>
+        <div class="main-header">
+            <h1>🏥 Medical AI Assistant</h1>
+            <p>AI-Powered Medical Diagnosis & Knowledge System</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Sidebar Configuration
-    with st.sidebar:
-        st.markdown("### ⚙️ System Configuration")
-        
-        # Status indicator
-        if st.session_state.initialized:
-            st.markdown('<span class="status-badge status-ready">✓ System Ready</span>', unsafe_allow_html=True)
-        else:
-            st.markdown('<span class="status-badge status-pending">⏳ Setup Required</span>', unsafe_allow_html=True)
-        
-        st.markdown("---")
-        
-        # Data Setup Section
-        st.markdown("### 📁 Data Management")
-        
-        if not st.session_state.data_extracted:
-            st.info("📥 Download medical knowledge base from GitHub")
-            if st.button("🚀 Download & Extract Data", type="primary", use_container_width=True):
-                with st.spinner("Downloading data from GitHub..."):
-                    extractor = DataExtractor()
-                    if extractor.extract_data():
-                        st.session_state.data_extracted = True
-                        st.session_state.extractor = extractor
-                        st.success("✅ Data downloaded successfully!")
-                        st.rerun()
-        else:
-            st.success("✅ Data extracted and ready")
-            
-        # Initialize System Section
-        if st.session_state.data_extracted and not st.session_state.initialized:
-            st.markdown("---")
-            st.markdown("### 🤖 System Initialization")
-            st.info("Build RAG system and load AI model")
-            if st.button("⚡ Initialize AI System", type="primary", use_container_width=True):
-                try:
-                    with st.spinner("🚀 Building AI system... This may take a few minutes."):
-                        processor = SimpleDataProcessor(st.session_state.extractor.extracted_path)
-                        chunks = processor.run()
-
-                        if not chunks:
-                            st.error("❌ No data extracted. Please check data structure.")
-                            return
-
-                        rag_system = SimpleRAGSystem(chunks)
-                        rag_system.create_collections()
-                        rag_system.index_data()
-
-                        st.session_state.medical_ai = MedicalAI(rag_system, GEMINI_API_KEY)
-                        st.session_state.rag_system = rag_system
-                        st.session_state.initialized = True
-
-                    st.success("✅ System initialized!")
-                    st.balloons()
+    # Sidebar for configuration
+    st.sidebar.header("⚙️ System Configuration")
+    
+    # Show API key status
+    st.sidebar.success("🔑 API key configured")
+    
+    # Data extraction section
+    st.sidebar.subheader("📁 Data Setup")
+    
+    if not st.session_state.data_extracted:
+        if st.sidebar.button("📥 Download & Extract Data", type="primary"):
+            with st.spinner("Downloading and extracting data..."):
+                extractor = DataExtractor()
+                if extractor.extract_data():
+                    st.session_state.data_extracted = True
+                    st.session_state.extractor = extractor
                     st.rerun()
 
-                except Exception as e:
-                    st.error(f"❌ Initialization error: {str(e)}")
+    # Initialize system
+    if st.session_state.data_extracted and not st.session_state.initialized:
+        if st.sidebar.button("🚀 Initialize System", type="primary"):
+            try:
+                with st.spinner("🚀 Processing medical data and setting up RAG system..."):
+                    # Initialize processor and extract data
+                    processor = SimpleDataProcessor(st.session_state.extractor.extracted_path)
+                    chunks = processor.run()
+
+                    if not chunks:
+                        st.error("❌ No data was extracted. Please check your data file structure.")
+                        return
+
+                    # Initialize RAG system
+                    rag_system = SimpleRAGSystem(chunks)
+                    rag_system.create_collections()
+                    rag_system.index_data()
+
+                    # Initialize Medical AI
+                    st.session_state.medical_ai = MedicalAI(rag_system, GEMINI_API_KEY)
+                    st.session_state.rag_system = rag_system
+                    st.session_state.initialized = True
+
+                st.success("✅ System initialized successfully!")
+                st.balloons()
+
+            except Exception as e:
+                st.error(f"❌ Error initializing system: {str(e)}")
+
+    # Main interface
+    if st.session_state.initialized and st.session_state.medical_ai:
+        st.header("💬 Ask Your Medical Question")
+
+        # Question input
+        question = st.text_area(
+            "Enter your medical question:",
+            placeholder="e.g., What are the symptoms of migraine? How is chest pain evaluated?",
+            height=120
+        )
+
+        col1, col2 = st.columns([3, 1])
         
-        # System Stats
-        if st.session_state.initialized and st.session_state.rag_system:
-            st.markdown("---")
-            st.markdown("### 📊 System Statistics")
+        with col1:
+            ask_button = st.button("🔍 Get Medical Answer", type="primary", use_container_width=True)
+        
+        with col2:
+            show_context = st.checkbox("📚 Show context")
+
+        if ask_button and question:
+            with st.spinner("🔍 Analyzing medical context..."):
+                try:
+                    # Get answer
+                    answer = st.session_state.medical_ai.ask(question)
+
+                    # Display answer
+                    st.markdown("---")
+                    st.subheader("🤖 Medical Answer")
+                    st.info(f"**Question:** {question}")
+                    st.success(answer)
+
+                    # Show context if requested
+                    if show_context:
+                        st.subheader("📚 Retrieved Context")
+                        context_chunks = st.session_state.rag_system.query(question, top_k=5)
+                        
+                        for i, chunk in enumerate(context_chunks):
+                            with st.expander(f"Context Source {i+1}"):
+                                st.text(chunk)
+
+                except Exception as e:
+                    st.error(f"❌ Error: {str(e)}")
+
+        # Example questions
+        st.markdown("---")
+        st.subheader("💡 Example Questions")
+        
+        examples = [
+            "What are the diagnostic criteria for migraine?",
+            "How is chest pain evaluated in emergency settings?",
+            "What are common risk factors for gastrointestinal bleeding?",
+            "Describe the symptoms and diagnosis process for pneumonia",
+            "What are the treatment options for asthma?",
+            "How to diagnose and manage diabetes?"
+        ]
+
+        cols = st.columns(2)
+        for i, example in enumerate(examples):
+            with cols[i % 2]:
+                if st.button(example, key=f"ex_{i}", use_container_width=True):
+                    st.session_state.example_question = example
+                    st.rerun()
+
+        # System info in sidebar
+        if st.session_state.rag_system:
+            st.sidebar.markdown("---")
+            st.sidebar.subheader("📊 System Stats")
             
             knowledge_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'knowledge'])
             narrative_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'narrative'])
             reasoning_count = len([c for c in st.session_state.rag_system.chunks if c['metadata']['type'] == 'reasoning'])
             
-            st.metric("Knowledge Chunks", f"{knowledge_count:,}")
-            st.metric("Case Narratives", f"{narrative_count:,}")
-            st.metric("Reasoning Cases", f"{reasoning_count:,}")
-            st.metric("Total Data Points", f"{len(st.session_state.rag_system.chunks):,}")
-
-    # Main Content Area
-    if st.session_state.initialized and st.session_state.medical_ai:
-        
-        # Query Interface
-        st.markdown("### 💬 Ask Your Medical Question")
-        
-        with st.container():
-            question = st.text_area(
-                "Enter your medical question:",
-                placeholder="Example: What are the symptoms of migraine? How is chest pain evaluated?",
-                height=120,
-                key="medical_question"
-            )
-            
-            col1, col2, col3 = st.columns([2, 2, 1])
-            
-            with col1:
-                if st.button("🔍 Get Answer", type="primary", use_container_width=True):
-                    if question:
-                        with st.spinner("🤖 Analyzing medical data..."):
-                            try:
-                                answer = st.session_state.medical_ai.ask(question)
-                                
-                                # Add to chat history
-                                st.session_state.chat_history.append({
-                                    'question': question,
-                                    'answer': answer
-                                })
-                                
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"❌ Error: {str(e)}")
-                    else:
-                        st.warning("⚠️ Please enter a question")
-            
-            with col2:
-                show_context = st.checkbox("📚 Show context sources", value=False)
-            
-            with col3:
-                if st.button("🗑️ Clear", use_container_width=True):
-                    st.session_state.chat_history = []
-                    st.rerun()
-        
-        # Display Chat History
-        if st.session_state.chat_history:
-            st.markdown("---")
-            st.markdown("### 💭 Conversation History")
-            
-            for i, chat in enumerate(reversed(st.session_state.chat_history)):
-                with st.container():
-                    st.markdown(f"""
-                        <div class="question-box">
-                            <strong>🙋 Question:</strong><br>
-                            {chat['question']}
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                        <div class="answer-box">
-                            <div class="answer-label">🤖 AI Medical Answer</div>
-                            {chat['answer']}
-                        </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if show_context:
-                        with st.expander("📚 View Context Sources"):
-                            context_chunks = st.session_state.rag_system.query(chat['question'], top_k=5)
-                            for j, chunk in enumerate(context_chunks):
-                                st.markdown(f"**Source {j+1}:**")
-                                st.text(chunk[:300] + "..." if len(chunk) > 300 else chunk)
-                                st.markdown("---")
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Example Questions Section
-        st.markdown("---")
-        st.markdown("### 💡 Example Medical Questions")
-        
-        examples = [
-            ("🧠 Neurological", "What are the diagnostic criteria for migraine and tension headaches?"),
-            ("❤️ Cardiovascular", "How is chest pain evaluated in emergency settings?"),
-            ("🩺 Gastroenterology", "What are common risk factors for gastrointestinal bleeding?"),
-            ("🫁 Respiratory", "Describe the symptoms and diagnosis process for pneumonia"),
-            ("🌡️ General Medicine", "What are the treatment options for Type 2 diabetes?"),
-            ("⚕️ Emergency", "How to diagnose and manage acute asthma exacerbation?")
-        ]
-        
-        col1, col2 = st.columns(2)
-        
-        for i, (category, example) in enumerate(examples):
-            with col1 if i % 2 == 0 else col2:
-                st.markdown(f"""
-                    <div class="example-card">
-                        <strong>{category}</strong><br>
-                        {example}
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                if st.button(f"Ask this question", key=f"example_{i}", use_container_width=True):
-                    st.session_state.medical_question = example
-                    st.rerun()
+            st.sidebar.metric("Knowledge", knowledge_count)
+            st.sidebar.metric("Narratives", narrative_count)
+            st.sidebar.metric("Reasoning", reasoning_count)
+            st.sidebar.metric("Total", len(st.session_state.rag_system.chunks))
 
     else:
-        # Welcome Screen
-        st.markdown("""
-            <div class="setup-card">
-                <h2 style="margin-top: 0;">👋 Welcome to Medical AI Assistant</h2>
-                <p style="font-size: 1.1rem; margin-bottom: 2rem;">
-                    An advanced RAG-powered system for medical diagnosis assistance
-                </p>
-                
-                <div class="setup-step">
-                    <div class="step-number">1</div>
-                    <div>Click <strong>'Download & Extract Data'</strong> in the sidebar to fetch medical knowledge base</div>
-                </div>
-                
-                <div class="setup-step">
-                    <div class="step-number">2</div>
-                    <div>Click <strong>'Initialize AI System'</strong> to build the RAG system</div>
-                </div>
-                
-                <div class="setup-step">
-                    <div class="step-number">3</div>
-                    <div>Start asking medical questions and get AI-powered answers!</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Feature Cards
-        st.markdown("### ✨ Key Features")
-        
+        # Welcome screen
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.markdown("""
-                <div class="stat-card">
-                    <div style="font-size: 3rem; text-align: center;">🧠</div>
-                    <h3 style="text-align: center; color: #667eea;">AI-Powered</h3>
-                    <p style="text-align: center;">Advanced RAG system with Gemini AI for accurate medical insights</p>
+                <div class="info-card">
+                    <h3 style="text-align: center;">🧠 AI-Powered</h3>
+                    <p style="text-align: center;">Advanced RAG system with Gemini AI</p>
                 </div>
             """, unsafe_allow_html=True)
         
         with col2:
             st.markdown("""
-                <div class="stat-card">
-                    <div style="font-size: 3rem; text-align: center;">📚</div>
-                    <h3 style="text-align: center; color: #667eea;">Rich Knowledge Base</h3>
-                    <p style="text-align: center;">Thousands of medical cases and diagnostic knowledge graphs</p>
+                <div class="info-card">
+                    <h3 style="text-align: center;">📚 Rich Database</h3>
+                    <p style="text-align: center;">Thousands of medical cases</p>
                 </div>
             """, unsafe_allow_html=True)
         
         with col3:
             st.markdown("""
-                <div class="stat-card">
-                    <div style="font-size: 3rem; text-align: center;">⚡</div>
-                    <h3 style="text-align: center; color: #667eea;">Fast & Accurate</h3>
-                    <p style="text-align: center;">Quick responses with context-aware medical reasoning</p>
+                <div class="info-card">
+                    <h3 style="text-align: center;">⚡ Fast & Accurate</h3>
+                    <p style="text-align: center;">Quick medical insights</p>
                 </div>
             """, unsafe_allow_html=True)
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Data Source Info
+        st.markdown("---")
         st.info("""
-            📊 **Data Source**: MIMIC-IV Clinical Database
-            
-            🔗 GitHub Repository: [Medical RAG Data](https://github.com/Mustehsan-Nisar-Rao/RAG)
-            
-            🔐 **API Configuration**: Pre-configured and ready to use
+        👋 **Welcome! Get Started:**
+        
+        1. 📥 Click **'Download & Extract Data'** in sidebar
+        2. 🚀 Click **'Initialize System'** to build RAG
+        3. 💬 Start asking medical questions!
+        
+        *Data source: MIMIC-IV Clinical Database*
         """)
 
 if __name__ == "__main__":
