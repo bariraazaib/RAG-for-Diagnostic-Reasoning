@@ -11,7 +11,7 @@ import zipfile
 import io
 
 # Your hardcoded API key
-GEMINI_API_KEY = "AIzaSyCUOQsqEUh9SYZ4MmfxjGTSgVywHfnqNls"
+GEMINI_API_KEY = "AIzaSyCRXw52kVhEfZj9Hykg9lIH2A1sew66LsQ"
 
 # ==================== CUSTOM CSS ====================
 def load_css():
